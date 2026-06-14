@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <property name="charset" value="UTF-8"/>
+    <property name="severity" value="error"/>
+
+    <!-- File-level checks -->
+    <module name="NewlineAtEndOfFile"/>
+    <module name="FileLength">
+        <property name="max" value="500"/>
+    </module>
+    <module name="LineLength">
+        <property name="max" value="140"/>
+        <!-- Allow long import statements and URLs in comments -->
+        <property name="ignorePattern" value="^(import |package |\s*\*\s*https?://).*$"/>
+    </module>
+
+    <!-- Suppression: allow @SuppressWarnings("checkstyle:...") in code -->
+    <module name="SuppressWarningsFilter"/>
+
+    <module name="TreeWalker">
+        <!-- Required for SuppressWarningsFilter -->
+        <module name="SuppressWarningsHolder"/>
+
+        <!-- ─── Naming ─── -->
+        <module name="ConstantName">
+            <!-- Allow 'log' / 'logger' from Lombok @Slf4j and standard loggers -->
+            <property name="format" value="^([A-Z][A-Z0-9]*(_[A-Z0-9]+)*|log(ger)?)$"/>
+        </module>
+        <module name="LocalFinalVariableName"/>
+        <module name="LocalVariableName"/>
+        <module name="MemberName"/>
+        <module name="MethodName"/>
+        <module name="PackageName"/>
+        <module name="ParameterName"/>
+        <module name="StaticVariableName"/>
+        <module name="TypeName"/>
+
+        <!-- ─── Imports ─── -->
+        <module name="AvoidStarImport"/>
+        <module name="IllegalImport"/>
+        <module name="RedundantImport"/>
+        <module name="UnusedImports"/>
+
+        <!-- ─── Size ─── -->
+        <module name="MethodLength">
+            <property name="max" value="60"/>
+        </module>
+        <module name="ParameterNumber">
+            <property name="max" value="8"/>
+            <!-- Do not count @Override methods (e.g. builders, generated code) -->
+            <property name="ignoreOverriddenMethods" value="true"/>
+        </module>
+
+        <!-- ─── Whitespace ─── -->
+        <module name="GenericWhitespace"/>
+        <module name="MethodParamPad"/>
+        <module name="NoWhitespaceAfter"/>
+        <module name="NoWhitespaceBefore"/>
+        <module name="OperatorWrap"/>
+        <module name="ParenPad"/>
+        <module name="TypecastParenPad"/>
+        <module name="WhitespaceAfter"/>
+        <module name="WhitespaceAround">
+            <!-- Allow empty constructors / methods: {} -->
+            <property name="allowEmptyConstructors" value="true"/>
+            <property name="allowEmptyMethods" value="true"/>
+            <property name="allowEmptyTypes" value="true"/>
+            <property name="allowEmptyLambdas" value="true"/>
+        </module>
+
+        <!-- ─── Modifiers ─── -->
+        <module name="ModifierOrder"/>
+
+        <!-- ─── Blocks ─── -->
+        <module name="AvoidNestedBlocks"/>
+        <module name="EmptyBlock">
+            <property name="option" value="TEXT"/>
+        </module>
+        <module name="LeftCurly"/>
+        <module name="NeedBraces"/>
+        <module name="RightCurly"/>
+
+        <!-- ─── Coding ─── -->
+        <module name="EmptyStatement"/>
+        <module name="EqualsHashCode"/>
+        <module name="IllegalInstantiation"/>
+        <module name="InnerAssignment"/>
+        <module name="MissingSwitchDefault"/>
+        <module name="SimplifyBooleanExpression"/>
+        <module name="SimplifyBooleanReturn"/>
+
+        <!-- ─── Class design ─── -->
+        <module name="FinalClass"/>
+        <module name="InterfaceIsType"/>
+        <module name="VisibilityModifier">
+            <property name="protectedAllowed" value="true"/>
+            <!-- Allow fields annotated with DI / persistence annotations -->
+            <property name="ignoreAnnotationCanonicalNames"
+                      value="org.springframework.beans.factory.annotation.Autowired,
+                             org.springframework.beans.factory.annotation.Value,
+                             jakarta.persistence.Id,
+                             jakarta.persistence.Column,
+                             jakarta.persistence.GeneratedValue,
+                             lombok.Setter,
+                             lombok.Getter"/>
+        </module>
+
+        <!-- ─── Miscellaneous ─── -->
+        <module name="ArrayTypeStyle"/>
+        <module name="UpperEll"/>
+    </module>
+</module>
