@@ -1,0 +1,19 @@
+services:
+  app:
+    build: .
+    image: dekra-challenge:latest
+    container_name: dekra-challenge
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      APP_SECURITY_JWT_SECRET: ${APP_SECURITY_JWT_SECRET:?APP_SECURITY_JWT_SECRET is required}
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75"
+      SPRING_H2_CONSOLE_ENABLED: true
+      SPRING_H2_CONSOLE_PATH: /h2-console
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

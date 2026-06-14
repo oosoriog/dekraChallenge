@@ -1,0 +1,34 @@
+# Build output (image builds from source inside the container)
+target/
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# AI context / planning (not part of the application)
+.aicontext/
+AI_CONTEXT.md
+HELP.md
+
+# IDE / editor files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+.apt_generated/
+
+# Docker / CI files (not needed inside the image)
+Dockerfile
+.dockerignore
+docker-compose.yml
+.github/
+
+# OS noise
+.DS_Store
+Thumbs.db
