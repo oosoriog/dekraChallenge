@@ -1,0 +1,47 @@
+name: test
+description: Test execution strategies for different scopes
+shell: powershell
+
+commands:
+  unit:
+    description: Run unit tests only (no Spring context, no DB)
+    run: ./mvnw test -Dgroups="unit"
+    working_directory: "."
+    note: >
+      Requires tests to be tagged with @Tag("unit").
+      Without tagging, all tests in src/test/java run.
+
+  all:
+    description: Run all tests including integration (H2 in-memory, no Docker needed)
+    run: ./mvnw verify
+    working_directory: "."
+    prerequisites:
+      - No external infrastructure needed — H2 in-memory is embedded
+
+  single-class:
+    description: Run a specific test class
+    run: ./mvnw test -Dtest={ClassName}
+    working_directory: "."
+    example: ./mvnw test -Dtest=ProductoServiceTest
+
+  single-method:
+    description: Run a specific test method
+    run: ./mvnw test -Dtest={ClassName}#{methodName}
+    working_directory: "."
+    example: ./mvnw test -Dtest=ProductoServiceTest#should_create_product_when_valid_input
+
+  with-coverage:
+    description: Run tests and generate a JaCoCo coverage report
+    run: ./mvnw verify
+    working_directory: "."
+    report_location: target/site/jacoco/index.html
+    note: >
+      Phase 5 only. JaCoCo is NOT in pom.xml yet; this command produces no coverage
+      report until the JaCoCo plugin is added during the delivery/quality phase.
+
+coverage_target:
+  overall: 80
+  enforced_in_phase: phase-5
+  note: >
+    Target meaningful coverage of domain rules, tax calculation, CRUD operations,
+    security and error handling. Do not add low-value tests to inflate the number.

@@ -1,0 +1,40 @@
+name: openapi-validate
+description: Validate the OpenAPI specification
+phase_gate: "phase-2"
+note: Only applicable from Phase 2 onwards when the OpenAPI contract file exists.
+
+contract_file: src/main/resources/openapi/api.yaml
+
+commands:
+  swagger-ui:
+    description: Access Swagger UI when the application is running
+    url: http://localhost:8080/swagger-ui.html
+    prerequisite: Application must be started with ./mvnw spring-boot:run
+
+  openapi-json:
+    description: Retrieve the generated OpenAPI JSON from running application
+    url: http://localhost:8080/v3/api-docs
+    format: json
+
+  openapi-yaml:
+    description: Retrieve the generated OpenAPI YAML from running application
+    url: http://localhost:8080/v3/api-docs.yaml
+    format: yaml
+
+  validate-with-swagger-cli:
+    description: Validate the YAML contract file with swagger-cli (requires Node.js)
+    run: npx @apidevtools/swagger-cli validate src/main/resources/openapi/api.yaml
+    prerequisite: Node.js and npm must be installed
+
+  validate-with-spectral:
+    description: Lint the OpenAPI contract with Spectral
+    run: npx @stoplight/spectral-cli lint src/main/resources/openapi/api.yaml
+    prerequisite: Node.js and npm must be installed
+
+validation_rules:
+  - All paths must begin with /api/v1
+  - All IDs must use format uuid
+  - All date-time fields must use format date-time
+  - All list endpoints must support page and size query parameters
+  - All error responses must reference ErrorResponse schema
+

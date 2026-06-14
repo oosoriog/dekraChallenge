@@ -1,0 +1,30 @@
+name: docker-compose
+description: Docker Compose operations (OPTIONAL — not required for this assessment)
+phase_gate: "phase-5"
+note: >
+  Docker is OPTIONAL for this assessment. The app runs self-contained with H2 in-memory.
+  Docker Compose may be added in Phase 5 as an optional delivery improvement.
+  No docker-compose.yml exists yet — do not create one before Phase 5.
+
+compose_file: docker-compose.yml
+
+commands:
+  up:
+    description: Start all services in the background
+    run: docker compose up -d
+    working_directory: "."
+
+  down:
+    description: Stop and remove containers
+    run: docker compose down
+    working_directory: "."
+
+  logs:
+    description: Follow logs of all services
+    run: docker compose logs -f
+    working_directory: "."
+
+note_on_services: >
+  If Docker Compose is added, it only needs the Spring Boot application.
+  No PostgreSQL container is needed (app uses H2 in-memory).
+  No Keycloak container is needed (app uses HTTP Basic with in-memory users).

@@ -1,0 +1,38 @@
+name: build
+description: Compile the project and run all tests using Maven Wrapper
+shell: powershell
+
+commands:
+  compile:
+    description: Compile production sources only
+    run: ./mvnw compile
+    working_directory: "."
+
+  test:
+    description: Run unit tests only
+    run: ./mvnw test
+    working_directory: "."
+
+  verify:
+    description: Full build including integration tests and quality checks
+    run: ./mvnw verify
+    working_directory: "."
+
+  clean:
+    description: Remove build output
+    run: ./mvnw clean
+    working_directory: "."
+
+  clean-verify:
+    description: Clean and full verify (recommended before committing)
+    run: ./mvnw clean verify
+    working_directory: "."
+
+  package:
+    description: Package as executable JAR (skip tests)
+    run: ./mvnw package -DskipTests
+    working_directory: "."
+
+expected_success_output: "BUILD SUCCESS"
+expected_failure_output: "BUILD FAILURE"
+

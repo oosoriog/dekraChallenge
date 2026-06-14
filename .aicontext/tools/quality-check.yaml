@@ -1,0 +1,42 @@
+name: quality-check
+description: Code quality and static analysis checks
+shell: powershell
+
+checks:
+  compile-warnings:
+    description: Compile and surface all warnings
+    run: ./mvnw compile -Dmaven.compiler.showWarnings=true
+    working_directory: "."
+
+  test-coverage:
+    description: Run tests with a coverage report (Phase 5 — requires JaCoCo)
+    run: ./mvnw verify
+    report: target/site/jacoco/index.html
+    target:
+      overall: "~80% meaningful coverage"
+    note: >
+      Phase 5 only. The JaCoCo Maven plugin is NOT configured in pom.xml yet; add it
+      during the delivery/quality phase before relying on this command.
+
+  checkstyle:
+    description: Run Checkstyle if configured
+    run: ./mvnw checkstyle:check
+    note: Checkstyle plugin must be added to pom.xml. Not required for this assessment.
+
+  spotbugs:
+    description: Run SpotBugs static analysis if configured
+    run: ./mvnw spotbugs:check
+    note: SpotBugs plugin must be added to pom.xml. Not required for this assessment.
+
+manual_review_checklist:
+  - No framework annotations in domain/ package
+  - No JPA entity returned from REST endpoint
+  - No business logic in @RestController
+  - No @Autowired on JpaRepository in use-case
+  - All public methods have Javadoc
+  - No wildcard imports
+  - No hard-coded passwords or secrets
+  - Test naming follows should_{expected}_when_{condition}
+  - No @Disabled tests without explanation comment
+  - Line length <= 120 characters
+
