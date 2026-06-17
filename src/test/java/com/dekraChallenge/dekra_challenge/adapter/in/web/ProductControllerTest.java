@@ -2,10 +2,13 @@ package com.dekraChallenge.dekra_challenge.adapter.in.web;
 
 import com.dekraChallenge.dekra_challenge.adapter.in.web.auth.CurrentUserProvider;
 import com.dekraChallenge.dekra_challenge.application.ProductService;
-import com.dekraChallenge.dekra_challenge.config.TaxConfig;
+import com.dekraChallenge.dekra_challenge.application.ProductView;
+import com.dekraChallenge.dekra_challenge.application.ProductViewService;
 import com.dekraChallenge.dekra_challenge.domain.model.Product;
 import com.dekraChallenge.dekra_challenge.domain.model.ProductFilter;
 import com.dekraChallenge.dekra_challenge.domain.model.ProductNotFoundException;
+import com.dekraChallenge.dekra_challenge.domain.tax.CalculatedTax;
+import com.dekraChallenge.dekra_challenge.domain.tax.IvaTaxCalculator;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,14 +34,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ProductController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import({TaxConfig.class, ProductWebMapper.class, ProductWebStructMapperImpl.class})
+@Import({ProductWebMapper.class, ProductWebStructMapperImpl.class})
 class ProductControllerTest {
+
+    private static final IvaTaxCalculator IVA = new IvaTaxCalculator();
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
     private ProductService productService;
+
+    @MockitoBean
+    private ProductViewService viewService;
 
     @TestConfiguration
     static class TestConfig {
@@ -48,12 +56,17 @@ class ProductControllerTest {
         }
     }
 
+    private static ProductView ivaView(Product product) {
+        CalculatedTax tax = IVA.calculate(product.getPrice());
+        return new ProductView(product, tax);
+    }
+
     // --- GET /productos (the public path stays Spanish) ---
 
     @Test
     void listProducts_returns_200_with_tax_fields() throws Exception {
         Product p = new Product(1L, "Teclado", "Mecánico", new BigDecimal("100.00"));
-        when(productService.search(any(ProductFilter.class))).thenReturn(List.of(p));
+        when(viewService.search(any(ProductFilter.class))).thenReturn(List.of(ivaView(p)));
 
         mockMvc.perform(get("/productos"))
                 .andExpect(status().isOk())
@@ -76,7 +89,7 @@ class ProductControllerTest {
 
     @Test
     void listProducts_with_filter_params_delegates_correctly() throws Exception {
-        when(productService.search(any(ProductFilter.class))).thenReturn(List.of());
+        when(viewService.search(any(ProductFilter.class))).thenReturn(List.of());
 
         mockMvc.perform(get("/productos")
                         .param("nombre", "tec")
@@ -86,7 +99,7 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$", hasSize(0)));
 
         ArgumentCaptor<ProductFilter> captor = ArgumentCaptor.forClass(ProductFilter.class);
-        verify(productService).search(captor.capture());
+        verify(viewService).search(captor.capture());
         ProductFilter filter = captor.getValue();
         assertThat(filter.name()).isEqualTo("tec");
         assertThat(filter.priceMin()).isEqualByComparingTo("10.00");
@@ -100,7 +113,7 @@ class ProductControllerTest {
     @Test
     void getProductoById_returns_200_with_tax_fields() throws Exception {
         Product p = new Product(5L, "Monitor", "4K", new BigDecimal("300.00"));
-        when(productService.getById(5L)).thenReturn(p);
+        when(viewService.getById(5L)).thenReturn(ivaView(p));
 
         mockMvc.perform(get("/productos/5"))
                 .andExpect(status().isOk())
@@ -119,7 +132,7 @@ class ProductControllerTest {
 
     @Test
     void getProductoById_missing_returns_404_with_error_response() throws Exception {
-        when(productService.getById(99L)).thenThrow(new ProductNotFoundException(99L));
+        when(viewService.getById(99L)).thenThrow(new ProductNotFoundException(99L));
 
         mockMvc.perform(get("/productos/99"))
                 .andExpect(status().isNotFound())
@@ -135,7 +148,7 @@ class ProductControllerTest {
     @Test
     void createProducto_valid_returns_201_with_location_and_body() throws Exception {
         Product created = new Product(10L, "USB Hub", "4 puertos", new BigDecimal("25.00"));
-        when(productService.create(any(Product.class))).thenReturn(created);
+        when(viewService.create(any(Product.class))).thenReturn(ivaView(created));
 
         String body = """
                 {"nombre": "USB Hub", "descripcion": "4 puertos", "precio": 25.00}
@@ -188,7 +201,7 @@ class ProductControllerTest {
     @Test
     void updateProducto_valid_returns_200() throws Exception {
         Product updated = new Product(3L, "Ratón Pro", "Inalámbrico", new BigDecimal("45.00"));
-        when(productService.update(eq(3L), any(Product.class))).thenReturn(updated);
+        when(viewService.update(eq(3L), any(Product.class))).thenReturn(ivaView(updated));
 
         String body = """
                 {"nombre": "Ratón Pro", "descripcion": "Inalámbrico", "precio": 45.00}
@@ -205,7 +218,7 @@ class ProductControllerTest {
 
     @Test
     void updateProducto_missing_returns_404() throws Exception {
-        when(productService.update(eq(999L), any(Product.class)))
+        when(viewService.update(eq(999L), any(Product.class)))
                 .thenThrow(new ProductNotFoundException(999L));
 
         String body = """
@@ -246,7 +259,7 @@ class ProductControllerTest {
     @Test
     void responses_do_not_contain_audit_fields() throws Exception {
         Product p = new Product(1L, "Test", null, new BigDecimal("50.00"));
-        when(productService.search(any(ProductFilter.class))).thenReturn(List.of(p));
+        when(viewService.search(any(ProductFilter.class))).thenReturn(List.of(ivaView(p)));
 
         mockMvc.perform(get("/productos"))
                 .andExpect(status().isOk())

@@ -5,6 +5,8 @@ import com.dekraChallenge.dekra_challenge.api.web.api.ProductsApi;
 import com.dekraChallenge.dekra_challenge.api.web.model.ProductResponse;
 import com.dekraChallenge.dekra_challenge.api.web.model.ProductRequest;
 import com.dekraChallenge.dekra_challenge.application.ProductService;
+import com.dekraChallenge.dekra_challenge.application.ProductView;
+import com.dekraChallenge.dekra_challenge.application.ProductViewService;
 import com.dekraChallenge.dekra_challenge.domain.model.Product;
 import com.dekraChallenge.dekra_challenge.domain.model.ProductFilter;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +21,16 @@ import java.util.List;
 public class ProductController implements ProductsApi {
 
     private final ProductService service;
+    private final ProductViewService viewService;
     private final ProductWebMapper mapper;
     private final CurrentUserProvider currentUserProvider;
 
     public ProductController(ProductService service,
+                             ProductViewService viewService,
                              ProductWebMapper mapper,
                              CurrentUserProvider currentUserProvider) {
         this.service = service;
+        this.viewService = viewService;
         this.mapper = mapper;
         this.currentUserProvider = currentUserProvider;
     }
@@ -33,12 +38,12 @@ public class ProductController implements ProductsApi {
     @Override
     public ResponseEntity<ProductResponse> createProduct(ProductRequest productRequest) {
         Product domain = mapper.toDomain(productRequest);
-        Product created = service.create(domain);
+        ProductView created = viewService.create(domain);
         ProductResponse response = mapper.toResponse(created);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(created.getId())
+                .buildAndExpand(created.product().getId())
                 .toUri();
 
         return ResponseEntity.created(location).body(response);
@@ -46,8 +51,8 @@ public class ProductController implements ProductsApi {
 
     @Override
     public ResponseEntity<ProductResponse> getProductById(Long id) {
-        Product product = service.getById(id);
-        return ResponseEntity.ok(mapper.toResponse(product));
+        ProductView view = viewService.getById(id);
+        return ResponseEntity.ok(mapper.toResponse(view));
     }
 
     @Override
@@ -56,14 +61,14 @@ public class ProductController implements ProductsApi {
                                                              BigDecimal priceMin,
                                                              BigDecimal priceMax) {
         ProductFilter filter = new ProductFilter(id, name, description, priceMin, priceMax);
-        List<Product> products = service.search(filter);
-        return ResponseEntity.ok(mapper.toResponseList(products));
+        List<ProductView> views = viewService.search(filter);
+        return ResponseEntity.ok(mapper.toResponseList(views));
     }
 
     @Override
     public ResponseEntity<ProductResponse> updateProduct(Long id, ProductRequest productRequest) {
         Product domain = mapper.toDomain(productRequest);
-        Product updated = service.update(id, domain);
+        ProductView updated = viewService.update(id, domain);
         return ResponseEntity.ok(mapper.toResponse(updated));
     }
 

@@ -6,8 +6,9 @@ import com.dekraChallenge.dekra_challenge.domain.model.Product;
 import com.dekraChallenge.dekra_challenge.domain.tax.CalculatedTax;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface ProductWebStructMapper {
 
     @Mapping(target = "id", ignore = true)
