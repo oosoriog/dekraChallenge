@@ -1,13 +1,13 @@
 package com.dekraChallenge.dekra_challenge.adapter.in.web;
 
+import com.dekraChallenge.dekra_challenge.api.web.model.ProductRequest;
 import com.dekraChallenge.dekra_challenge.api.web.model.ProductResponse;
 import com.dekraChallenge.dekra_challenge.api.web.model.TipoImpuesto;
-import com.dekraChallenge.dekra_challenge.config.TaxProperties;
+import com.dekraChallenge.dekra_challenge.application.ProductView;
 import com.dekraChallenge.dekra_challenge.domain.model.Product;
+import com.dekraChallenge.dekra_challenge.domain.tax.CalculatedTax;
 import com.dekraChallenge.dekra_challenge.domain.tax.ItbisTaxCalculator;
 import com.dekraChallenge.dekra_challenge.domain.tax.IvaTaxCalculator;
-import com.dekraChallenge.dekra_challenge.domain.tax.TaxCalculatorResolver;
-import com.dekraChallenge.dekra_challenge.domain.tax.TaxType;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
@@ -23,22 +23,21 @@ class ProductWebMapperTest {
 
     private final IvaTaxCalculator ivaCalc = new IvaTaxCalculator();
     private final ItbisTaxCalculator itbisCalc = new ItbisTaxCalculator();
-    private final TaxCalculatorResolver resolver =
-            new TaxCalculatorResolver(List.of(ivaCalc, itbisCalc));
-    private final ProductWebStructMapper structMapper = new ProductWebStructMapperImpl();
+    private final ProductWebStructMapper mapper = new ProductWebStructMapperImpl();
 
-    private ProductWebMapper mapperWith(TaxType type) {
-        TaxProperties props = new TaxProperties();
-        props.setType(type);
-        return new ProductWebMapper(resolver, props, structMapper);
+    private ProductView ivaView(Product product) {
+        CalculatedTax tax = ivaCalc.calculate(product.getPrice());
+        return new ProductView(product, tax);
+    }
+
+    private ProductView itbisView(Product product) {
+        CalculatedTax tax = itbisCalc.calculate(product.getPrice());
+        return new ProductView(product, tax);
     }
 
     @Test
     void toDomain_maps_request_fields_correctly() {
-        ProductWebMapper mapper = mapperWith(TaxType.IVA);
-
-        com.dekraChallenge.dekra_challenge.api.web.model.ProductRequest req =
-                new com.dekraChallenge.dekra_challenge.api.web.model.ProductRequest();
+        ProductRequest req = new ProductRequest();
         req.setNombre("Teclado");
         req.setDescripcion("Mecánico");
         req.setPrecio(new BigDecimal("79.99"));
@@ -52,11 +51,9 @@ class ProductWebMapperTest {
     }
 
     @Test
-    void toResponse_with_IVA_computes_tax_fields_correctly() {
-        ProductWebMapper mapper = mapperWith(TaxType.IVA);
-
+    void toResponse_with_IVA_maps_tax_fields_correctly() {
         Product product = new Product(1L, "Monitor", "27 pulgadas", new BigDecimal("100.00"));
-        ProductResponse response = mapper.toResponse(product);
+        ProductResponse response = mapper.toResponse(ivaView(product));
 
         assertThat(response.getId()).isEqualTo(1L);
         assertThat(response.getNombre()).isEqualTo("Monitor");
@@ -69,11 +66,9 @@ class ProductWebMapperTest {
     }
 
     @Test
-    void toResponse_with_ITBIS_computes_tax_fields_correctly() {
-        ProductWebMapper mapper = mapperWith(TaxType.ITBIS);
-
+    void toResponse_with_ITBIS_maps_tax_fields_correctly() {
         Product product = new Product(2L, "Ratón", null, new BigDecimal("100.00"));
-        ProductResponse response = mapper.toResponse(product);
+        ProductResponse response = mapper.toResponse(itbisView(product));
 
         assertThat(response.getId()).isEqualTo(2L);
         assertThat(response.getNombre()).isEqualTo("Ratón");
@@ -87,14 +82,12 @@ class ProductWebMapperTest {
 
     @Test
     void toResponseList_maps_all_items() {
-        ProductWebMapper mapper = mapperWith(TaxType.IVA);
-
-        List<Product> products = List.of(
-                new Product(1L, "A", null, new BigDecimal("10.00")),
-                new Product(2L, "B", "desc", new BigDecimal("20.00"))
+        List<ProductView> views = List.of(
+                ivaView(new Product(1L, "A", null, new BigDecimal("10.00"))),
+                ivaView(new Product(2L, "B", "desc", new BigDecimal("20.00")))
         );
 
-        List<ProductResponse> responses = mapper.toResponseList(products);
+        List<ProductResponse> responses = mapper.toResponseList(views);
 
         assertThat(responses).hasSize(2);
         assertThat(responses.get(0).getNombre()).isEqualTo("A");

@@ -2,12 +2,16 @@ package com.dekraChallenge.dekra_challenge.adapter.in.web;
 
 import com.dekraChallenge.dekra_challenge.api.web.model.ProductRequest;
 import com.dekraChallenge.dekra_challenge.api.web.model.ProductResponse;
+import com.dekraChallenge.dekra_challenge.application.ProductView;
 import com.dekraChallenge.dekra_challenge.domain.model.Product;
 import com.dekraChallenge.dekra_challenge.domain.tax.CalculatedTax;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+import java.util.List;
+
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface ProductWebStructMapper {
 
     @Mapping(target = "id", ignore = true)
@@ -25,4 +29,12 @@ public interface ProductWebStructMapper {
     @Mapping(target = "importeImpuesto", source = "tax.amount")
     @Mapping(target = "precioConImpuesto", source = "tax.priceWithTax")
     ProductResponse toResponse(Product product, CalculatedTax tax);
+
+    default ProductResponse toResponse(ProductView view) {
+        return toResponse(view.product(), view.tax());
+    }
+
+    default List<ProductResponse> toResponseList(List<ProductView> views) {
+        return views.stream().map(this::toResponse).toList();
+    }
 }

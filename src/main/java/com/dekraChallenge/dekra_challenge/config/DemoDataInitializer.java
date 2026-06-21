@@ -2,6 +2,7 @@ package com.dekraChallenge.dekra_challenge.config;
 
 import com.dekraChallenge.dekra_challenge.application.ProductService;
 import com.dekraChallenge.dekra_challenge.domain.model.Product;
+import com.dekraChallenge.dekra_challenge.domain.model.ProductFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -25,7 +26,7 @@ public class DemoDataInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        if (!productService.list().isEmpty()) {
+        if (!productService.search(new ProductFilter(null, null, null, null, null)).isEmpty()) {
             log.info("Demo data already present, skipping seed.");
             return;
         }

@@ -32,11 +32,6 @@ public class ProductService {
         return created;
     }
 
-    @Cacheable(value = CacheConfig.PRODUCTS, key = "'all'")
-    public List<Product> list() {
-        return repository.findAll();
-    }
-
     @Cacheable(value = CacheConfig.PRODUCT_BY_ID, key = "#id")
     public Product getById(Long id) {
         return repository.findById(id)
@@ -60,6 +55,7 @@ public class ProductService {
         return updated;
     }
 
+    @Cacheable(value = CacheConfig.PRODUCTS, key = "#filter")
     public List<Product> search(ProductFilter filter) {
         log.debug("Searching products with filter: {}", filter);
         return repository.search(filter);

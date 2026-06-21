@@ -2,6 +2,7 @@ package com.dekraChallenge.dekra_challenge.application;
 
 import com.dekraChallenge.dekra_challenge.config.CacheConfig;
 import com.dekraChallenge.dekra_challenge.domain.model.Product;
+import com.dekraChallenge.dekra_challenge.domain.model.ProductFilter;
 import com.dekraChallenge.dekra_challenge.domain.port.out.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,9 @@ class ProductServiceCacheTest {
     @Autowired
     private CacheManager cacheManager;
 
+    private static final ProductFilter EMPTY_FILTER =
+            new ProductFilter(null, null, null, null, null);
+
     @BeforeEach
     void clearCaches() {
         cacheManager.getCacheNames().forEach(name ->
@@ -53,44 +57,44 @@ class ProductServiceCacheTest {
     }
 
     @Test
-    void list_should_cache_result() {
+    void search_should_cache_result() {
         List<Product> products = List.of(
                 new Product(1L, "A", null, BigDecimal.ONE),
                 new Product(2L, "B", null, BigDecimal.TEN));
-        when(repository.findAll()).thenReturn(products);
+        when(repository.search(EMPTY_FILTER)).thenReturn(products);
 
-        List<Product> first = service.list();
-        List<Product> second = service.list();
+        List<Product> first = service.search(EMPTY_FILTER);
+        List<Product> second = service.search(EMPTY_FILTER);
 
         assertThat(first).hasSize(2);
         assertThat(second).hasSize(2);
-        verify(repository, times(1)).findAll();
+        verify(repository, times(1)).search(EMPTY_FILTER);
     }
 
     @Test
-    void create_should_evict_products_list_cache() {
+    void create_should_evict_search_cache() {
         List<Product> initial = List.of(new Product(1L, "A", null, BigDecimal.ONE));
         List<Product> updated = List.of(
                 new Product(1L, "A", null, BigDecimal.ONE),
                 new Product(2L, "B", null, BigDecimal.TEN));
 
-        when(repository.findAll()).thenReturn(initial, updated);
+        when(repository.search(EMPTY_FILTER)).thenReturn(initial, updated);
         when(repository.save(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new Product(2L, "B", null, BigDecimal.TEN));
 
         // Populate cache
-        service.list();
-        // Create evicts list cache
+        service.search(EMPTY_FILTER);
+        // Create evicts search cache
         service.create(Product.of("B", null, BigDecimal.TEN));
-        // Next list call should hit repository again
-        List<Product> result = service.list();
+        // Next search call should hit repository again
+        List<Product> result = service.search(EMPTY_FILTER);
 
         assertThat(result).hasSize(2);
-        verify(repository, times(2)).findAll();
+        verify(repository, times(2)).search(EMPTY_FILTER);
     }
 
     @Test
-    void update_should_evict_product_and_list_caches() {
+    void update_should_evict_product_and_search_caches() {
         Product original = new Product(1L, "Teclado", "Mecánico", new BigDecimal("49.99"));
         Product changed = new Product(1L, "Teclado Pro", "Mecánico Pro", new BigDecimal("79.99"));
 
