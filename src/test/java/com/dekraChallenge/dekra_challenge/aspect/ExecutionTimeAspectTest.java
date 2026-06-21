@@ -6,6 +6,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import com.dekraChallenge.dekra_challenge.application.ProductService;
 import com.dekraChallenge.dekra_challenge.domain.model.Product;
+import com.dekraChallenge.dekra_challenge.domain.model.ProductFilter;
 import com.dekraChallenge.dekra_challenge.domain.port.out.ProductRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,21 +66,22 @@ class ExecutionTimeAspectTest {
 
     @Test
     void should_log_execution_time_for_application_method() {
-        when(productRepository.findAll())
+        ProductFilter filter = new ProductFilter(null, null, null, null, null);
+        when(productRepository.search(filter))
                 .thenReturn(List.of(new Product(1L, "Teclado", "Mecánico", new BigDecimal("100.00"))));
 
-        productService.list();
+        productService.search(filter);
 
         List<ILoggingEvent> logs = appender.list;
         assertThat(logs).isNotEmpty();
         ILoggingEvent event = logs.stream()
-                .filter(e -> e.getFormattedMessage().contains("ProductService.list"))
+                .filter(e -> e.getFormattedMessage().contains("ProductService.search"))
                 .findFirst()
-                .orElseThrow(() -> new AssertionError("No timing log for ProductService.list"));
+                .orElseThrow(() -> new AssertionError("No timing log for ProductService.search"));
 
         assertThat(event.getLevel()).isEqualTo(Level.INFO);
         assertThat(event.getFormattedMessage())
-                .contains("ProductService.list")
+                .contains("ProductService.search")
                 .contains("executed in")
                 .contains("ms")
                 .contains("status=OK");
@@ -105,8 +107,9 @@ class ExecutionTimeAspectTest {
 
     @Test
     void should_not_log_sensitive_data() {
-        when(productRepository.findAll()).thenReturn(List.of());
-        productService.list();
+        ProductFilter filter = new ProductFilter(null, null, null, null, null);
+        when(productRepository.search(filter)).thenReturn(List.of());
+        productService.search(filter);
 
         String allMessages = appender.list.stream()
                 .map(ILoggingEvent::getFormattedMessage)

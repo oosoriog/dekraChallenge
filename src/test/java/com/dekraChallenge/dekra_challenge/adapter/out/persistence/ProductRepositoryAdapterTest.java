@@ -2,6 +2,7 @@ package com.dekraChallenge.dekra_challenge.adapter.out.persistence;
 
 import com.dekraChallenge.dekra_challenge.config.JpaAuditingConfig;
 import com.dekraChallenge.dekra_challenge.domain.model.Product;
+import com.dekraChallenge.dekra_challenge.domain.model.ProductFilter;
 import com.dekraChallenge.dekra_challenge.domain.port.out.ProductRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
@@ -112,13 +113,14 @@ class ProductRepositoryAdapterTest {
     }
 
     @Test
-    void should_exclude_deleted_from_findAll() {
+    void should_exclude_deleted_from_search() {
         Product p1 = repository.save(Product.of("A", null, BigDecimal.ONE));
         repository.save(Product.of("B", null, BigDecimal.TEN));
 
         repository.softDelete(p1.getId(), "test-user");
 
-        List<Product> result = repository.findAll();
+        ProductFilter emptyFilter = new ProductFilter(null, null, null, null, null);
+        List<Product> result = repository.search(emptyFilter);
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getName()).isEqualTo("B");
     }

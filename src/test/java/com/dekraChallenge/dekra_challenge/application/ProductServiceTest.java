@@ -1,6 +1,7 @@
 package com.dekraChallenge.dekra_challenge.application;
 
 import com.dekraChallenge.dekra_challenge.domain.model.Product;
+import com.dekraChallenge.dekra_challenge.domain.model.ProductFilter;
 import com.dekraChallenge.dekra_challenge.domain.model.ProductNotFoundException;
 import com.dekraChallenge.dekra_challenge.domain.port.out.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,14 +47,16 @@ class ProductServiceTest {
     }
 
     @Test
-    void should_list_only_active_products() {
+    void should_search_products_with_filter() {
         Product p1 = new Product(1L, "A", null, BigDecimal.ONE);
         Product p2 = new Product(2L, "B", null, BigDecimal.TEN);
-        when(repository.findAll()).thenReturn(List.of(p1, p2));
+        ProductFilter filter = new ProductFilter(null, null, null, null, null);
+        when(repository.search(filter)).thenReturn(List.of(p1, p2));
 
-        List<Product> result = service.list();
+        List<Product> result = service.search(filter);
 
         assertThat(result).hasSize(2);
+        verify(repository).search(filter);
     }
 
     @Test

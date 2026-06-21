@@ -31,12 +31,6 @@ public class ProductRepositoryAdapter implements ProductRepository {
         return mapper.toDomain(saved);
     }
 
-    @Override
-    public List<Product> findAll() {
-        return jpaRepository.findByDeletedFalse().stream()
-                .map(mapper::toDomain)
-                .toList();
-    }
 
     @Override
     public Optional<Product> findById(Long id) {
