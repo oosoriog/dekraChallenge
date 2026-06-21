@@ -23,8 +23,7 @@ class ProductWebMapperTest {
 
     private final IvaTaxCalculator ivaCalc = new IvaTaxCalculator();
     private final ItbisTaxCalculator itbisCalc = new ItbisTaxCalculator();
-    private final ProductWebStructMapper structMapper = new ProductWebStructMapperImpl();
-    private final ProductWebMapper mapper = new ProductWebMapper(structMapper);
+    private final ProductWebStructMapper mapper = new ProductWebStructMapperImpl();
 
     private ProductView ivaView(Product product) {
         CalculatedTax tax = ivaCalc.calculate(product.getPrice());

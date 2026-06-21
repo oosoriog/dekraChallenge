@@ -22,12 +22,12 @@ public class ProductController implements ProductsApi {
 
     private final ProductService service;
     private final ProductViewService viewService;
-    private final ProductWebMapper mapper;
+    private final ProductWebStructMapper mapper;
     private final CurrentUserProvider currentUserProvider;
 
     public ProductController(ProductService service,
                              ProductViewService viewService,
-                             ProductWebMapper mapper,
+                             ProductWebStructMapper mapper,
                              CurrentUserProvider currentUserProvider) {
         this.service = service;
         this.viewService = viewService;

@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ProductController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import({ProductWebMapper.class, ProductWebStructMapperImpl.class})
+@Import(ProductWebStructMapperImpl.class)
 class ProductControllerTest {
 
     private static final IvaTaxCalculator IVA = new IvaTaxCalculator();
